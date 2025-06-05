@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OBS Clock</title>
+    <style>
+        body {
+            background: transparent;
+            margin: 0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #clock {
+            font-size: 100px;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="clock">00:00:00</div>
+
+    <script>
+        function applySetting() {
+            const color = localStorage.getItem('clockColor') || 'black';
+            const size = localStorage.getItem('clockSize') || '100px';
+            const font = localStorage.getItem('clockFont') || 'sans-serif';
+            const timezone = localStorage.getItem('clockTimezone') || 'local';
+
+            const clock = document.getElementById('clock');
+            clock.style.color = color;
+            clock.style.fontSize = size;
+            clock.style.fontFamily = font;
+
+            return timezone;
+        }
+
+        function updateClock() {
+            const timezone = applySetting();
+            const now = new Date();
+
+            let displayTime;
+
+            if (timezone === 'local') {
+                displayTime = now.toLocaleTimeString();
+            } else {
+                displayTime = now.toLocaleTimeString('en-US', { timeZone: timezone });
+            }
+
+            document.getElementById('clock').textContent = displayTime;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        window.addEventListener('storage', () => {
+            updateClock();
+        });
+    </script>
+</body>
+
+</html>
