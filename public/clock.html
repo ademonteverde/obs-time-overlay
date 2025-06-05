@@ -25,13 +25,15 @@
     <div id="clock">00:00:00</div>
 
     <script>
+        const clock = document.getElementById('clock');
+        let timezone = 'local';
+
         function applySetting() {
             const color = localStorage.getItem('clockColor') || 'black';
             const size = localStorage.getItem('clockSize') || '100px';
             const font = localStorage.getItem('clockFont') || 'sans-serif';
-            const timezone = localStorage.getItem('clockTimezone') || 'local';
+            timezone = localStorage.getItem('clockTimezone') || 'local';
 
-            const clock = document.getElementById('clock');
             clock.style.color = color;
             clock.style.fontSize = size;
             clock.style.fontFamily = font;
@@ -40,24 +42,43 @@
         }
 
         function updateClock() {
-            const timezone = applySetting();
             const now = new Date();
 
             let displayTime;
-
             if (timezone === 'local') {
                 displayTime = now.toLocaleTimeString();
             } else {
                 displayTime = now.toLocaleTimeString('en-US', { timeZone: timezone });
             }
 
-            document.getElementById('clock').textContent = displayTime;
+            clock.textContent = displayTime;
         }
 
-        setInterval(updateClock, 1000);
+        // Initial load
+        applySetting();
         updateClock();
 
+        // Update every second
+        setInterval(updateClock, 1000);
+
+        // Listen for storage changes
         window.addEventListener('storage', () => {
+            console.log('Storage event detected');
+            applySetting();
+            updateClock();
+        });
+
+        // Listen for settings updates via BroadcastChannel
+        const channel = new BroadcastChannel('clock-settings');
+        channel.addEventListener('message', (event) => {
+            console.log('Received settings update via BroadcastChannel:', event.data);
+
+            localStorage.setItem('clockColor', event.data.clockColor);
+            localStorage.setItem('clockSize', event.data.clockSize);
+            localStorage.setItem('clockFont', event.data.clockFont);
+            localStorage.setItem('clockTimezone', event.data.clockTimezone);
+
+            applySetting();
             updateClock();
         });
     </script>

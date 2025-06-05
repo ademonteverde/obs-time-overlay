@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OBS Clock Control Dock</title>
+</head>
+
+<body>
+    <h2>Clock Settings</h2>
+
+    <label>Color:</label>
+    <input type="color" id="colorPicker" />
+    <br><br>
+
+    <label>Font Size (px):</label>
+    <input type="number" id="fontSize" value="100" />
+    <br><br>
+
+<label>Font:</label>
+<select id="fontSelect">
+    <option value="sans-serif">Sans-Serif</option>
+    <option value="serif">Serif</option>
+    <option value="monospace">Monospace</option>
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Courier New">Courier New</option>
+    <option value="Verdana">Verdana</option>
+    <option value="Georgia">Georgia</option>
+    <option value="Impact">Impact</option>
+    <option value="Trebuchet MS">Trebuchet MS</option>
+    <option value="Lucida Sans Unicode">Lucida Sans Unicode</option>
+    <option value="Comic Sans MS">Comic Sans MS</option>
+    <option value="Tahoma">Tahoma</option>
+    <option value="Palatino Linotype">Palatino Linotype</option>
+    <option value="Garamond">Garamond</option>
+    <option value="Bookman">Bookman</option>
+    <option value="Arial Black">Arial Black</option>
+    <option value="Candara">Candara</option>
+    <option value="Franklin Gothic Medium">Franklin Gothic Medium</option>
+    <option value="Century Gothic">Century Gothic</option>
+    <option value="Gill Sans">Gill Sans</option>
+    <option value="Optima">Optima</option>
+    <option value="Futura">Futura</option>
+    <option value="Rockwell">Rockwell</option>
+    <option value="'Roboto', sans-serif">Roboto</option>
+    <option value="'Open Sans', sans-serif">Open Sans</option>
+    <option value="'Lato', sans-serif">Lato</option>
+    <option value="'Raleway', sans-serif">Raleway</option>
+    <option value="'Oswald', sans-serif">Oswald</option>
+    <option value="'Merriweather', serif">Merriweather</option>
+    <option value="'Playfair Display', serif">Playfair Display</option>
+</select>
+
+    <br><br>
+
+<label>Timezone:</label>
+<select id="timezoneSelect">
+    <option value="local">Local Time</option>
+    <option value="UTC">UTC</option>
+
+    <option value="America/St_Johns">America/St_Johns (Newfoundland)</option>
+    <option value="America/Halifax">America/Halifax (Atlantic)</option>
+    <option value="America/New_York">America/New_York (Eastern)</option>
+    <option value="America/Chicago">America/Chicago (Central)</option>
+    <option value="America/Denver">America/Denver (Mountain)</option>
+    <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
+    <option value="America/Anchorage">America/Anchorage (Alaska)</option>
+    <option value="Pacific/Honolulu">Pacific/Honolulu (Hawaii)</option>
+    <option value="America/Sao_Paulo">America/Sao_Paulo (Brazil)</option>
+    <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
+    <option value="America/Bogota">America/Bogota (Colombia)</option>
+    <option value="America/Santiago">America/Santiago (Chile)</option>
+    <option value="America/Lima">America/Lima (Peru)</option>
+    <option value="Europe/Lisbon">Europe/Lisbon (Portugal)</option>
+    <option value="Europe/London">Europe/London (UK)</option>
+    <option value="Europe/Madrid">Europe/Madrid (Spain)</option>
+    <option value="Europe/Paris">Europe/Paris (France)</option>
+    <option value="Europe/Berlin">Europe/Berlin (Germany)</option>
+    <option value="Europe/Rome">Europe/Rome (Italy)</option>
+    <option value="Europe/Amsterdam">Europe/Amsterdam (Netherlands)</option>
+    <option value="Europe/Stockholm">Europe/Stockholm (Sweden)</option>
+    <option value="Europe/Helsinki">Europe/Helsinki (Finland)</option>
+    <option value="Europe/Istanbul">Europe/Istanbul (Turkey)</option>
+    <option value="Europe/Moscow">Europe/Moscow (Russia)</option>
+    <option value="Asia/Dubai">Asia/Dubai (UAE)</option>
+    <option value="Asia/Kolkata">Asia/Kolkata (India)</option>
+    <option value="Asia/Bangkok">Asia/Bangkok (Thailand)</option>
+    <option value="Asia/Singapore">Asia/Singapore</option>
+    <option value="Asia/Tokyo">Asia/Tokyo (Japan)</option>
+    <option value="Asia/Seoul">Asia/Seoul (South Korea)</option>
+    <option value="Asia/Shanghai">Asia/Shanghai (China)</option>
+    <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
+    <option value="Asia/Taipei">Asia/Taipei (Taiwan)</option>
+    <option value="Asia/Manila">Asia/Manila (Philippines)</option>
+    <option value="Asia/Jakarta">Asia/Jakarta (Indonesia)</option>
+    <option value="Australia/Perth">Australia/Perth (AWST)</option>
+    <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+    <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+    <option value="Pacific/Auckland">Pacific/Auckland (New Zealand)</option>
+    <option value="Africa/Cairo">Africa/Cairo (Egypt)</option>
+    <option value="Africa/Johannesburg">Africa/Johannesburg (South Africa)</option>
+</select>
+
+    <br><br>
+
+    <button id="apply">Apply</button>
+
+    <script>
+        const channel = new BroadcastChannel('clock-settings');
+
+        document.getElementById('apply').addEventListener('click', () => {
+            const color = document.getElementById('colorPicker').value;
+            const size = document.getElementById('fontSize').value + 'px';
+            const font = document.getElementById('fontSelect').value;
+            const timezone = document.getElementById('timezoneSelect').value;
+
+            // Save to localStorage
+            localStorage.setItem('clockColor', color);
+            localStorage.setItem('clockSize', size);
+            localStorage.setItem('clockFont', font);
+            localStorage.setItem('clockTimezone', timezone);
+
+            // Broadcast to clock.html
+            channel.postMessage({
+                clockColor: color,
+                clockSize: size,
+                clockFont: font,
+                clockTimezone: timezone
+            });
+
+            // Log to console
+            console.log('Broadcast sent:', {
+                clockColor: color,
+                clockSize: size,
+                clockFont: font,
+                clockTimezone: timezone
+            });
+        });
+
+        // Load settings from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const color = localStorage.getItem('clockColor') || 'black';
+            const size = localStorage.getItem('clockSize') || '100px';
+            const font = localStorage.getItem('clockFont') || 'sans-serif';
+            const timezone = localStorage.getItem('clockTimezone') || 'local';
+
+            document.getElementById('colorPicker').value = color;
+            document.getElementById('fontSize').value = parseInt(size);
+            document.getElementById('fontSelect').value = font;
+            document.getElementById('timezoneSelect').value = timezone;
+        });
+    </script>
+</body>
+
+</html>
