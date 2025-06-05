@@ -74,4 +74,4 @@ A customizable clock overlay for OBS Studio with a settings control dock.
 ## License
 MIT License
 
-Copyright (c) 2023 Andre Carlo Demonteverde
+Copyright (c) 2025 Andre Carlo Demonteverde

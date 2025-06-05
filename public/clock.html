@@ -31,14 +31,34 @@
         function applySetting() {
             const color = localStorage.getItem('clockColor') || 'black';
             const size = localStorage.getItem('clockSize') || '100px';
-            const font = localStorage.getItem('clockFont') || 'sans-serif';
             timezone = localStorage.getItem('clockTimezone') || 'local';
+            const googleFont = localStorage.getItem('clockGoogleFont') || '';
 
             clock.style.color = color;
             clock.style.fontSize = size;
-            clock.style.fontFamily = font;
 
-            return timezone;
+            if (googleFont !== '') {
+                const fontNameForURL = googleFont.replace(/ /g, '+');
+
+                // Remove old dynamic link if exists
+                const oldLink = document.getElementById('dynamicGoogleFont');
+                if (oldLink) oldLink.remove();
+
+                // Create new link
+                const newLink = document.createElement('link');
+                newLink.id = 'dynamicGoogleFont';
+                newLink.rel = 'stylesheet';
+                newLink.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}&display=swap`;
+                document.head.appendChild(newLink);
+
+                // Apply font
+                newLink.onload = () => {
+                    clock.style.fontFamily = `'${googleFont}', sans-serif`;
+                };
+            } else {
+                // Fallback
+                clock.style.fontFamily = 'sans-serif';
+            }
         }
 
         function updateClock() {
@@ -75,8 +95,8 @@
 
             localStorage.setItem('clockColor', event.data.clockColor);
             localStorage.setItem('clockSize', event.data.clockSize);
-            localStorage.setItem('clockFont', event.data.clockFont);
             localStorage.setItem('clockTimezone', event.data.clockTimezone);
+            localStorage.setItem('clockGoogleFont', event.data.clockGoogleFont);
 
             applySetting();
             updateClock();
