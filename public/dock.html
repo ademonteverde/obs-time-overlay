@@ -3,18 +3,85 @@
 
 <head>
     <title>OBS Clock Control Dock</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.5;
+            background-color: #1D1F26;
+            color: #FFFFFF;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        input,
+        select,
+        button {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            height: 40px;
+            margin-bottom: 15px;
+            padding: 8px 10px;
+            background-color: #464B59;
+            border: 1px solid #444;
+            color: #ffffff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        input[type="number"] {
+            width: 100px;
+        }
+
+        button {
+            background-color: #464B59;
+            border: none;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #464B59;
+        }
+
+        #fontPreview {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #444;
+            max-width: 300px;
+            background-color: #ffffff;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 
 <body>
     <h2>Clock Settings</h2>
-
+    <label>Font Preview:</label>
+    <div id="fontPreview" style="font-size: 24px; margin-top: 10px;">0123456789 AM:PM</div>
+    <br>
     <label>Color:</label>
     <input type="color" id="colorPicker" />
-    <br><br>
+    <div style="font-size: 12px; color: grey;">
+        Note: Eye Dropper may not work in OBS Dock. Use color picker or manual input.
+    </div>
 
+    <br>
     <label>Font Size (px):</label>
     <input type="number" id="fontSize" value="100" />
-    <br><br>
+    <br>
 
     <label>Google Font Name:</label>
     <input type="text" id="googleFont" placeholder="e.g. Roboto" />
@@ -22,8 +89,20 @@
         Use exact name from <a href="https://fonts.google.com" target="_blank">Google Fonts</a>
     </div>
     <br>
-    <div id="fontPreview" style="font-size: 24px; margin-top: 10px;">Font Preview</div>
-    <br><br>
+    <label>Font Weight:</label>
+    <select id="fontWeight">
+        <option value="100">100 (Thin)</option>
+        <option value="200">200 (Extra Light)</option>
+        <option value="300">300 (Light)</option>
+        <option value="400" selected>400 (Normal)</option>
+        <option value="500">500 (Medium)</option>
+        <option value="600">600 (Semi-Bold)</option>
+        <option value="700">700 (Bold)</option>
+        <option value="800">800 (Extra Bold)</option>
+        <option value="900">900 (Black)</option>
+    </select>
+    <br>
+
 
     <label>Timezone:</label>
     <select id="timezoneSelect">
@@ -71,6 +150,8 @@
         <option value="Africa/Cairo">Africa/Cairo (Egypt)</option>
         <option value="Africa/Johannesburg">Africa/Johannesburg (South Africa)</option>
     </select>
+    <br>
+    <button id="reset">Reset to Default</button>
 
     <button id="apply">Apply</button>
 
@@ -78,10 +159,20 @@
         const channel = new BroadcastChannel('clock-settings');
         const applyButton = document.getElementById('apply');
 
+
+        function getBrightness(hex) {
+            const rgb = parseInt(hex.substring(1), 16); 
+            const r = (rgb >> 16) & 0xff;
+            const g = (rgb >> 8) & 0xff;
+            const b = (rgb >> 0) & 0xff;
+            return (r * 299 + g * 587 + b * 114) / 1000;
+        }
+
         // Live preview on font input change
         document.getElementById('googleFont').addEventListener('input', () => {
             const googleFont = document.getElementById('googleFont').value.trim();
             const preview = document.getElementById('fontPreview');
+            const weight = document.getElementById('fontWeight').value;
 
             if (googleFont !== '') {
                 const fontNameForURL = googleFont.replace(/ /g, '+');
@@ -94,37 +185,77 @@
                 const newLink = document.createElement('link');
                 newLink.id = 'previewGoogleFont';
                 newLink.rel = 'stylesheet';
-                newLink.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}&display=swap`;
+                newLink.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}:wght@${weight}&display=swap`;
                 document.head.appendChild(newLink);
 
                 // Apply preview font
                 newLink.onload = () => {
                     preview.style.fontFamily = `'${googleFont}', sans-serif`;
+                    preview.style.color = document.getElementById('colorPicker').value;
+                    preview.style.fontWeight = weight;
                 };
                 newLink.onerror = () => {
                     preview.style.fontFamily = 'sans-serif';
+                    preview.style.fontWeight = '400';
                 };
             } else {
                 // Reset preview
                 preview.style.fontFamily = 'sans-serif';
+                preview.style.fontWeight = '400';
             }
         });
 
+        //  Live preview on font weight change
+        document.getElementById('fontWeight').addEventListener('change', () => {
+            document.getElementById('googleFont').dispatchEvent(new Event('input'));
+        });
+
+        // Live preview on color picker change
+        document.getElementById('colorPicker').addEventListener('input', () => {
+            const color = document.getElementById('colorPicker').value;
+            const preview = document.getElementById('fontPreview');
+            preview.style.color = color;
+
+            const brightness = getBrightness(color);
+            preview.style.backgroundColor = brightness > 186 ? '#000000' : '#ffffff';
+        });
+
+
+        // Apply button click event
         applyButton.addEventListener('click', () => {
             const color = document.getElementById('colorPicker').value;
             const size = document.getElementById('fontSize').value + 'px';
             const timezone = document.getElementById('timezoneSelect').value;
             const googleFont = document.getElementById('googleFont').value.trim();
+            const weight = document.getElementById('fontWeight').value;
 
             // Validation
             if (googleFont === '') {
-                alert('Please enter a Google Font name.');
+                // Use fallback sans-serif
+                localStorage.setItem('clockColor', color);
+                localStorage.setItem('clockSize', size);
+                localStorage.setItem('clockTimezone', timezone);
+                localStorage.setItem('clockGoogleFont', '');
+                localStorage.setItem('clockWeight', weight);
+
+                channel.postMessage({
+                    clockColor: color,
+                    clockSize: size,
+                    clockTimezone: timezone,
+                    clockGoogleFont: '',
+                    clockWeight: weight
+                });
+
+                console.log('Broadcast sent with default font.');
+
+                alert('Settings applied with default font.');
+                applyButton.disabled = false;
+                applyButton.textContent = 'Apply';
                 return;
             }
 
-            const fontNameForURL = googleFont.replace(/ /g, '+');
 
-            // Disable button while loading
+            const fontNameForURL = googleFont.replace(/ /g, '+');
             applyButton.disabled = true;
             applyButton.textContent = 'Applying...';
 
@@ -145,33 +276,32 @@
                 localStorage.setItem('clockSize', size);
                 localStorage.setItem('clockTimezone', timezone);
                 localStorage.setItem('clockGoogleFont', googleFont);
+                localStorage.setItem('clockWeight', weight);
 
                 // Broadcast to clock.html
                 channel.postMessage({
                     clockColor: color,
                     clockSize: size,
                     clockTimezone: timezone,
-                    clockGoogleFont: googleFont
+                    clockGoogleFont: googleFont,
+                    clockWeight: weight
                 });
 
                 console.log('Broadcast sent:', {
                     clockColor: color,
                     clockSize: size,
                     clockTimezone: timezone,
-                    clockGoogleFont: googleFont
+                    clockGoogleFont: googleFont,
+                    clockWeight: weight
                 });
 
                 alert('Font applied successfully!');
-
-                // Re-enable button
                 applyButton.disabled = false;
                 applyButton.textContent = 'Apply';
             };
 
             testLink.onerror = () => {
                 alert('Font could not be loaded. Please check the name from Google Fonts.');
-
-                // Re-enable button
                 applyButton.disabled = false;
                 applyButton.textContent = 'Apply';
             };
@@ -183,16 +313,55 @@
             const size = localStorage.getItem('clockSize') || '100px';
             const timezone = localStorage.getItem('clockTimezone') || 'local';
             const googleFont = localStorage.getItem('clockGoogleFont') || '';
+            const weight = localStorage.getItem('clockWeight') || '400';
 
             document.getElementById('colorPicker').value = color;
             document.getElementById('fontSize').value = parseInt(size);
             document.getElementById('timezoneSelect').value = timezone;
             document.getElementById('googleFont').value = googleFont;
+            document.getElementById('fontWeight').value = weight;
 
-            // Trigger initial preview
-            const event = new Event('input');
-            document.getElementById('googleFont').dispatchEvent(event);
+            const preview = document.getElementById('fontPreview');
+            preview.style.color = color;
+            preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+
+            document.getElementById('googleFont').dispatchEvent(new Event('input'));
+
         });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            if (confirm('Reset all settings to default?')) {
+                localStorage.removeItem('clockColor');
+                localStorage.removeItem('clockSize');
+                localStorage.removeItem('clockTimezone');
+                localStorage.removeItem('clockGoogleFont');
+                localStorage.removeItem('clockWeight');
+
+                channel.postMessage({
+                    clockColor: 'black',
+                    clockSize: '100px',
+                    clockTimezone: 'local',
+                    clockGoogleFont: '',
+                    clockWeight: '400'
+                });
+
+                const preview = document.getElementById('fontPreview');
+                preview.style.color = 'black';
+                preview.style.fontFamily = 'sans-serif';
+                preview.style.fontWeight = '400';
+
+                // Also reset form fields
+                document.getElementById('colorPicker').value = '#000000';
+                document.getElementById('fontSize').value = 100;
+                document.getElementById('googleFont').value = '';
+                document.getElementById('fontWeight').value = '400';
+                document.getElementById('timezoneSelect').value = 'local';
+
+                // Optionally trigger update
+                document.getElementById('googleFont').dispatchEvent(new Event('input'));
+            }
+        });
+
     </script>
 </body>
 

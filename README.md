@@ -2,9 +2,12 @@
 A customizable clock overlay for OBS Studio with a settings control dock.
 
 ✅ Live-updating clock  
-✅ Change font, size, color, and timezone  
+✅ Change font, size, color, weight, and timezone  
 ✅ Settings sync in real-time between Dock and Clock display  
 ✅ Easy to load into OBS as a browser source  
+✅ Live font preview with automatic contract handling
+✅ Google Fonts support
+✅ OBS Yami-inspired visual styling
 
 ---
 
@@ -40,8 +43,13 @@ A customizable clock overlay for OBS Studio with a settings control dock.
 ## Features
 
 - Change **Clock color**
-- Change **Clock font** and **Font size**
+- Change **Font size**, **Font family**, and **Font weight**
 - Select **timezone**
+- Live **ont preview**
+- **Settings sync** in real-time between Dock and Clock display
+- **Easy to load** into OBS as a browser source
+- **Live font preview** with automatic contract handling
+- System font fallback when Google Fonts are unavailable
 
 ---
 
@@ -60,14 +68,18 @@ A customizable clock overlay for OBS Studio with a settings control dock.
 - Tested with OBS 30+
 - **OBS Browser Source** sometimes blocks `file:///` — using `http://absolute/` works reliably
 - **BroadcastChannel** is used for fast settings sync 
+- Settings reset restores defaults (black, sans-serif, 100px, normal weight)
 
 ## Future Ideas
 
+- Option to display **Date**
+- Option to display **Am/Pm**
 - Option to toggle **time format** (12h / 24h)
 - Option to toggle **seconds**
 - Option to **include date**
 - Custom **font upload**
-- Preset themes/ styles
+- Preset **style themes**
+- Sync between multiple clock overlays
 
 ---
 

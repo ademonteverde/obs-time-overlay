@@ -33,14 +33,16 @@
             const size = localStorage.getItem('clockSize') || '100px';
             timezone = localStorage.getItem('clockTimezone') || 'local';
             const googleFont = localStorage.getItem('clockGoogleFont') || '';
+            const weight = localStorage.getItem('clockWeight') || '400';
 
             clock.style.color = color;
             clock.style.fontSize = size;
+            clock.style.fontWeight = weight;
 
             if (googleFont !== '') {
                 const fontNameForURL = googleFont.replace(/ /g, '+');
 
-                // Remove old dynamic link if exists
+                // Remove old link
                 const oldLink = document.getElementById('dynamicGoogleFont');
                 if (oldLink) oldLink.remove();
 
@@ -63,13 +65,9 @@
 
         function updateClock() {
             const now = new Date();
-
-            let displayTime;
-            if (timezone === 'local') {
-                displayTime = now.toLocaleTimeString();
-            } else {
-                displayTime = now.toLocaleTimeString('en-US', { timeZone: timezone });
-            }
+            let displayTime = timezone === 'local'
+                ? now.toLocaleTimeString()
+                : now.toLocaleTimeString('en-US', { timeZone: timezone });
 
             clock.textContent = displayTime;
         }
@@ -97,6 +95,7 @@
             localStorage.setItem('clockSize', event.data.clockSize);
             localStorage.setItem('clockTimezone', event.data.clockTimezone);
             localStorage.setItem('clockGoogleFont', event.data.clockGoogleFont);
+            localStorage.setItem('clockWeight', event.data.clockWeight);
 
             applySetting();
             updateClock();
