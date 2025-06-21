@@ -56,7 +56,8 @@
             background-color: #464B59;
         }
 
-        #fontPreview {
+        #clockFontPreview,
+        #dateFontPreview {
             margin-top: 10px;
             padding: 10px;
             border: 1px solid #444;
@@ -69,41 +70,11 @@
 
 <body>
     <h2>Clock Settings</h2>
-    <label>Font Preview:</label>
-    <div id="fontPreview" style="font-size: 24px; margin-top: 10px;">0123456789 AM:PM</div>
+    <label>Clock Font Preview:</label>
+    <div id="clockFontPreview" style="font-size: 24px; margin-top: 10px;">0123456789 AM:PM</div>
     <br>
-    <label>Color:</label>
-    <input type="color" id="colorPicker" />
-    <div style="font-size: 12px; color: grey;">
-        Note: Eye Dropper may not work in OBS Dock. Use color picker or manual input.
+
     </div>
-
-    <br>
-    <label>Font Size (px):</label>
-    <input type="number" id="fontSize" value="100" />
-    <br>
-
-    <label>Google Font Name:</label>
-    <input type="text" id="googleFont" placeholder="e.g. Roboto" />
-    <div style="font-size: 12px; color:grey;">
-        Use exact name from <a href="https://fonts.google.com" target="_blank">Google Fonts</a>
-    </div>
-    <br>
-    <label>Font Weight:</label>
-    <select id="fontWeight">
-        <option value="100">100 (Thin)</option>
-        <option value="200">200 (Extra Light)</option>
-        <option value="300">300 (Light)</option>
-        <option value="400" selected>400 (Normal)</option>
-        <option value="500">500 (Medium)</option>
-        <option value="600">600 (Semi-Bold)</option>
-        <option value="700">700 (Bold)</option>
-        <option value="800">800 (Extra Bold)</option>
-        <option value="900">900 (Black)</option>
-    </select>
-    <br>
-
-
     <label>Timezone:</label>
     <select id="timezoneSelect">
         <option value="local">Local Time</option>
@@ -150,219 +121,576 @@
         <option value="Africa/Cairo">Africa/Cairo (Egypt)</option>
         <option value="Africa/Johannesburg">Africa/Johannesburg (South Africa)</option>
     </select>
+
+    <label>Clock Font Color:</label>
+    <input type="color" id="clockColorPicker" />
+    <div style="font-size: 12px; color: grey;">
+        Note: Eye Dropper may not work in OBS Dock. Use color picker or manual input.
+    </div>
+
     <br>
-    <button id="reset">Reset to Default</button>
-
-    <button id="apply">Apply</button>
-
-    <script>
-        const channel = new BroadcastChannel('clock-settings');
-        const applyButton = document.getElementById('apply');
 
 
-        function getBrightness(hex) {
-            const rgb = parseInt(hex.substring(1), 16); 
-            const r = (rgb >> 16) & 0xff;
-            const g = (rgb >> 8) & 0xff;
-            const b = (rgb >> 0) & 0xff;
-            return (r * 299 + g * 587 + b * 114) / 1000;
-        }
+    <label>Clock Google Font Name:</label>
+    <input type="text" id="clockGoogleFont" placeholder="e.g. Roboto" />
+    <div style="font-size: 12px; color:grey;">
+        Use exact name from <a href="https://fonts.google.com" target="_blank">Google Fonts</a>
+    </div>
+    <br>
+    <label>clock Font Weight:</label>
+    <select id="clockfontWeight">
+        <option value="100">100 (Thin)</option>
+        <option value="200">200 (Extra Light)</option>
+        <option value="300">300 (Light)</option>
+        <option value="400" selected>400 (Normal)</option>
+        <option value="500">500 (Medium)</option>
+        <option value="600">600 (Semi-Bold)</option>
+        <option value="700">700 (Bold)</option>
+        <option value="800">800 (Extra Bold)</option>
+        <option value="900">900 (Black)</option>
+    </select>
+    <br>
 
-        // Live preview on font input change
-        document.getElementById('googleFont').addEventListener('input', () => {
-            const googleFont = document.getElementById('googleFont').value.trim();
-            const preview = document.getElementById('fontPreview');
-            const weight = document.getElementById('fontWeight').value;
+    <label>Clock Font Size (px):</label>
+    <input type="number" id="clockFontSize" value="100" />
 
-            if (googleFont !== '') {
-                const fontNameForURL = googleFont.replace(/ /g, '+');
+    <br>
+    <h2>Date Settings</h2>
+    <div style="margin-top: 10px;">
+        <strong>Date Font Preview:</strong>
+        <div id="dateFontPreview" style="font-size: 30px; margin-top: 5px;">
+            Saturday, June 14, 2025
+        </div>
+        <br>
+        <label>Date Format:</label>
+        <select id="dateFormat">
+            <option value="MM/DD/YYYY">MM/DD/YYYY (06/14/2025)</option>
+            <option value="DD/MM/YYYY">DD/MM/YYYY (14/06/2025)</option>
+            <option value="YYYY-MM-DD">YYYY-MM-DD (2025-06-14)</option>
+            <option value="MMMM D, YYYY">MMMM D, YYYY (June 14, 2025)</option>
+            <option value="D MMMM YYYY">D MMMM YYYY (14 June 2025)</option>
+            <option value="ddd, MMM D">ddd, MMM D (Sat, Jun 14)</option>
+            <option value="EEEE, MMMM d, yyyy">EEEE, MMMM d, yyyy (Saturday, June 14, 2025)</option>
+        </select>
+        <br>
+        <label>
+            <label>Use same style as clock</label>
+            <input type="checkbox" id="useClockStyleForDate" checked>
 
-                // Remove old preview link if exists
-                const oldLink = document.getElementById('previewGoogleFont');
-                if (oldLink) oldLink.remove();
+        </label>
 
-                // Create new preview link
-                const newLink = document.createElement('link');
-                newLink.id = 'previewGoogleFont';
-                newLink.rel = 'stylesheet';
-                newLink.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}:wght@${weight}&display=swap`;
-                document.head.appendChild(newLink);
+        <div id="dateSettingsSection" style="display: none; margin-top: 10px;">
+            <label>Date Font Color:</label>
+            <input type="color" id="dateColorPicker" /><br>
 
-                // Apply preview font
-                newLink.onload = () => {
-                    preview.style.fontFamily = `'${googleFont}', sans-serif`;
-                    preview.style.color = document.getElementById('colorPicker').value;
-                    preview.style.fontWeight = weight;
+            <label>Date Font Name:</label>
+            <input type="text" id="dateGoogleFont" placeholder="e.g. Roboto" />
+            <div style="font-size: 12px; color:grey;">
+                Use exact name from <a href="https://fonts.google.com" target="_blank">Google Fonts</a>
+            </div>
+            <br>
+            <label>Date Font Weight:</label>
+            <select id="dateFontWeight">
+                <option value="100">100 (Thin)</option>
+                <option value="200">200 (Extra Light)</option>
+                <option value="300">300 (Light)</option>
+                <option value="400" selected>400 (Normal)</option>
+                <option value="500">500 (Medium)</option>
+                <option value="600">600 (Semi-Bold)</option>
+                <option value="700">700 (Bold)</option>
+                <option value="800">800 (Extra Bold)</option>
+                <option value="900">900 (Black)</option>
+            </select><br>
+
+            <label>Date Font Size (px):</label>
+            <input type="number" id="dateFontSize" value="100" />
+
+            <br>
+
+
+        </div>
+        <br>
+        <button id="reset">Reset to Default</button>
+
+        <button id="save">Save</button>
+        <div style="font-size: 12px; color: grey; margin-top: -10px;">
+    Remember to save before closing OBS so your settings are stored!
+</div>
+
+
+        <script>
+            // Utilities
+            const channel = new BroadcastChannel('clock-settings');
+            const useClockStyleCheckbox = document.getElementById('useClockStyleForDate');
+            const dateSettingsSection = document.getElementById('dateSettingsSection');
+            const applyButton = document.getElementById('save');
+
+            function getBrightness(hex) {
+                const rgb = parseInt(hex.substring(1), 16);
+                const r = (rgb >> 16) & 0xff;
+                const g = (rgb >> 8) & 0xff;
+                const b = rgb & 0xff;
+                return (r * 299 + g * 587 + b * 114) / 1000;
+            }
+
+            function formatDate(date, format, timezone = 'local') {
+                function getPart(option, value) {
+                    return new Intl.DateTimeFormat('en-US', { [option]: value, timeZone: timezone === 'local' ? undefined : timezone }).format(date);
+                }
+
+                const map = {
+                    YYYY: date.toLocaleString('en-US', { year: 'numeric', timeZone: timezone === 'local' ? undefined : timezone }),
+                    yyyy: date.toLocaleString('en-US', { year: 'numeric', timeZone: timezone === 'local' ? undefined : timezone }),
+                    MM: getPart('month', '2-digit'),
+                    DD: getPart('day', '2-digit'),
+                    dd: getPart('day', '2-digit'),
+                    D: getPart('day', 'numeric'),
+                    d: getPart('day', 'numeric'),
+                    MMM: getPart('month', 'short'),
+                    MMMM: getPart('month', 'long'),
+                    ddd: getPart('weekday', 'short'),
+                    EEEE: getPart('weekday', 'long'),
                 };
-                newLink.onerror = () => {
+
+                return format.replace(/\b(?:YYYY|yyyy|MMMM|MMM|MM|DD|dd|D|d|ddd|EEEE)\b/g, match => map[match] || match);
+            }
+
+
+
+
+
+            // Font Previews
+            function updateClockFontPreview() {
+                const font = document.getElementById('clockGoogleFont').value.trim();
+                const weight = document.getElementById('clockfontWeight').value;
+                const color = document.getElementById('clockColorPicker').value;
+                const preview = document.getElementById('clockFontPreview');
+
+                preview.style.fontSize = '25px';
+
+
+                if (font) {
+                    const fontURL = font.replace(/ /g, '+');
+                    const old = document.getElementById('clockPreviewFont');
+                    if (old) old.remove();
+
+                    const link = document.createElement('link');
+                    link.id = 'clockPreviewFont';
+                    link.rel = 'stylesheet';
+                    link.href = `https://fonts.googleapis.com/css2?family=${fontURL}:wght@${weight}&display=swap`;
+                    document.head.appendChild(link);
+
+                    link.onload = () => {
+                        preview.style.fontFamily = `'${font}', sans-serif`;
+                        preview.style.fontWeight = weight;
+                        preview.style.color = color;
+
+                        if (useClockStyleCheckbox.checked) syncDatePreviewToClock();
+                    };
+                } else {
                     preview.style.fontFamily = 'sans-serif';
-                    preview.style.fontWeight = '400';
+                    preview.style.clockfontWeight = '400';
+
+                    if (useClockStyleCheckbox.checked) syncDatePreviewToClock();
+                }
+            }
+
+            function updateClockTimePreview() {
+                const preview = document.getElementById('clockFontPreview');
+                const timezone = document.getElementById('timezoneSelect')?.value || 'local';
+                const date = new Date();
+
+                let timeString;
+                try {
+                    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                    timeString = new Intl.DateTimeFormat('en-US', { ...options, timeZone: timezone === 'local' ? undefined : timezone }).format(date);
+                } catch (e) {
+                    timeString = date.toLocaleTimeString();
+                }
+
+                preview.textContent = timeString;
+            }
+
+            // Update clock preview every second
+            setInterval(updateClockTimePreview, 1000);
+            window.addEventListener('DOMContentLoaded', updateClockTimePreview);
+
+            function updateDateFontPreview() {
+                const font = document.getElementById('dateGoogleFont').value.trim();
+                const weight = document.getElementById('dateFontWeight').value;
+                const color = document.getElementById('dateColorPicker').value;
+                const format = document.getElementById('dateFormat').value;
+                const preview = document.getElementById('dateFontPreview');
+
+                const today = new Date();
+                const timezone = document.getElementById('timezoneSelect').value;
+                preview.textContent = formatDate(today, format, timezone);
+
+
+
+                preview.style.color = color;
+
+                if (font) {
+                    const fontURL = font.replace(/ /g, '+');
+                    const old = document.getElementById('dateFontPreviewLink');
+                    if (old) old.remove();
+
+                    const link = document.createElement('link');
+                    link.id = 'dateFontPreviewLink';
+                    link.rel = 'stylesheet';
+                    link.href = `https://fonts.googleapis.com/css2?family=${fontURL}:wght@${weight}&display=swap`;
+                    document.head.appendChild(link);
+
+                    link.onload = () => {
+                        preview.style.fontFamily = `'${font}', sans-serif`;
+                        preview.style.clockfontWeight = weight;
+                    };
+                } else {
+                    preview.style.fontFamily = 'sans-serif';
+                    preview.style.clockfontWeight = '400';
+                }
+
+                preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+            }
+
+
+            // Broadcasting
+            function broadcastDateSettings() {
+                const dateChannel = new BroadcastChannel('date-settings');
+                const useClock = useClockStyleCheckbox.checked;
+
+                if (useClock) {
+                    const clockColor = localStorage.getItem('clockColor') || 'black';
+                    const clockSize = localStorage.getItem('clockSize') || '100px';
+                    const clockWeight = localStorage.getItem('clockWeight') || '400';
+                    const clockFont = localStorage.getItem('clockFont') || '';
+                    const clockTimezone = localStorage.getItem('clockTimezone') || 'local';
+
+                    dateChannel.postMessage({
+                        dateColor: clockColor,
+                        dateSize: clockSize,
+                        dateWeight: clockWeight,
+                        dateFont: clockFont,
+                        dateTimezone: clockTimezone,
+                        dateFormat: localStorage.getItem('dateFormat') || 'MMMM D, YYYY'
+                    });
+                } else {
+                    const dateColor = document.getElementById('dateColorPicker').value;
+                    const dateSize = document.getElementById('dateFontSize').value + 'px';
+                    const dateWeight = document.getElementById('dateFontWeight').value;
+                    const dateFont = document.getElementById('dateGoogleFont').value.trim();
+                    const dateFormat = document.getElementById('dateFormat').value;
+
+                    localStorage.setItem('dateColor', 'black');
+                    localStorage.setItem('dateSize', '25px');
+                    localStorage.setItem('dateWeight', '400');
+                    localStorage.setItem('dateFont', '');
+                    localStorage.setItem('dateFormat', 'MMMM D, YYYY');
+                    localStorage.setItem('dateTimezone', 'local');
+
+
+                    dateChannel.postMessage({
+                        dateColor,
+                        dateSize,
+                        dateWeight,
+                        dateFont,
+                        dateFormat
+                    });
+                }
+            }
+
+            // Save Clock Settings
+            applyButton.addEventListener('click', () => {
+                const color = document.getElementById('clockColorPicker').value;
+                const size = document.getElementById('clockFontSize').value + 'px';
+                const timezone = document.getElementById('timezoneSelect').value;
+                const clockGoogleFont = document.getElementById('clockGoogleFont').value.trim();
+                const weight = document.getElementById('clockfontWeight').value;
+
+                if (!clockGoogleFont) {
+                    localStorage.setItem('clockColor', color);
+                    localStorage.setItem('clockSize', size);
+                    localStorage.setItem('clockTimezone', timezone);
+                    localStorage.setItem('clockFont', '');
+                    localStorage.setItem('clockWeight', weight);
+
+                    channel.postMessage({
+                        clockColor: color,
+                        clockSize: size,
+                        clockTimezone: timezone,
+                        clockFont: '',
+                        clockWeight: weight
+                    });
+
+                    broadcastDateSettings();
+                    alert('Settings applied with default font.');
+                    return;
+                }
+
+                const fontURL = clockGoogleFont.replace(/ /g, '+');
+                const old = document.getElementById('testGoogleFont');
+                if (old) old.remove();
+
+                const testLink = document.createElement('link');
+                testLink.id = 'testGoogleFont';
+                testLink.rel = 'stylesheet';
+                testLink.href = `https://fonts.googleapis.com/css2?family=${fontURL}:wght@${weight}&display=swap`;
+                document.head.appendChild(testLink);
+
+                applyButton.disabled = true;
+                applyButton.textContent = 'Saving...';
+
+                testLink.onload = () => {
+                    localStorage.setItem('clockColor', color);
+                    localStorage.setItem('clockSize', size);
+                    localStorage.setItem('clockTimezone', timezone);
+                    localStorage.setItem('clockFont', clockGoogleFont);
+                    localStorage.setItem('clockWeight', weight);
+
+                    channel.postMessage({
+                        clockColor: color,
+                        clockSize: size,
+                        clockTimezone: timezone,
+                        clockFont: clockGoogleFont,
+                        clockWeight: weight
+                    });
+
+                    alert('Font applied successfully!');
+                    applyButton.disabled = false;
+                    broadcastDateSettings();
+                    applyButton.textContent = 'Save';
                 };
-            } else {
-                // Reset preview
-                preview.style.fontFamily = 'sans-serif';
-                preview.style.fontWeight = '400';
-            }
-        });
 
-        //  Live preview on font weight change
-        document.getElementById('fontWeight').addEventListener('change', () => {
-            document.getElementById('googleFont').dispatchEvent(new Event('input'));
-        });
+                testLink.onerror = () => {
+                    alert('Font could not be loaded. Please check the name.');
+                    applyButton.disabled = false;
+                    applyButton.textContent = 'Save';
+                };
+            });
 
-        // Live preview on color picker change
-        document.getElementById('colorPicker').addEventListener('input', () => {
-            const color = document.getElementById('colorPicker').value;
-            const preview = document.getElementById('fontPreview');
-            preview.style.color = color;
+            // Reset
+            document.getElementById('reset').addEventListener('click', () => {
+                if (!confirm('Reset all settings to default?')) return;
 
-            const brightness = getBrightness(color);
-            preview.style.backgroundColor = brightness > 186 ? '#000000' : '#ffffff';
-        });
-
-
-        // Apply button click event
-        applyButton.addEventListener('click', () => {
-            const color = document.getElementById('colorPicker').value;
-            const size = document.getElementById('fontSize').value + 'px';
-            const timezone = document.getElementById('timezoneSelect').value;
-            const googleFont = document.getElementById('googleFont').value.trim();
-            const weight = document.getElementById('fontWeight').value;
-
-            // Validation
-            if (googleFont === '') {
-                // Use fallback sans-serif
-                localStorage.setItem('clockColor', color);
-                localStorage.setItem('clockSize', size);
-                localStorage.setItem('clockTimezone', timezone);
-                localStorage.setItem('clockGoogleFont', '');
-                localStorage.setItem('clockWeight', weight);
-
-                channel.postMessage({
-                    clockColor: color,
-                    clockSize: size,
-                    clockTimezone: timezone,
-                    clockGoogleFont: '',
-                    clockWeight: weight
-                });
-
-                console.log('Broadcast sent with default font.');
-
-                alert('Settings applied with default font.');
-                applyButton.disabled = false;
-                applyButton.textContent = 'Apply';
-                return;
-            }
-
-
-            const fontNameForURL = googleFont.replace(/ /g, '+');
-            applyButton.disabled = true;
-            applyButton.textContent = 'Applying...';
-
-            // Remove old test link if exists
-            const oldTestLink = document.getElementById('testGoogleFont');
-            if (oldTestLink) oldTestLink.remove();
-
-            // Create test link to validate
-            const testLink = document.createElement('link');
-            testLink.id = 'testGoogleFont';
-            testLink.rel = 'stylesheet';
-            testLink.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}&display=swap`;
-            document.head.appendChild(testLink);
-
-            testLink.onload = () => {
-                // Success: Save to localStorage
-                localStorage.setItem('clockColor', color);
-                localStorage.setItem('clockSize', size);
-                localStorage.setItem('clockTimezone', timezone);
-                localStorage.setItem('clockGoogleFont', googleFont);
-                localStorage.setItem('clockWeight', weight);
-
-                // Broadcast to clock.html
-                channel.postMessage({
-                    clockColor: color,
-                    clockSize: size,
-                    clockTimezone: timezone,
-                    clockGoogleFont: googleFont,
-                    clockWeight: weight
-                });
-
-                console.log('Broadcast sent:', {
-                    clockColor: color,
-                    clockSize: size,
-                    clockTimezone: timezone,
-                    clockGoogleFont: googleFont,
-                    clockWeight: weight
-                });
-
-                alert('Font applied successfully!');
-                applyButton.disabled = false;
-                applyButton.textContent = 'Apply';
-            };
-
-            testLink.onerror = () => {
-                alert('Font could not be loaded. Please check the name from Google Fonts.');
-                applyButton.disabled = false;
-                applyButton.textContent = 'Apply';
-            };
-        });
-
-        // Load settings from localStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            const color = localStorage.getItem('clockColor') || 'black';
-            const size = localStorage.getItem('clockSize') || '100px';
-            const timezone = localStorage.getItem('clockTimezone') || 'local';
-            const googleFont = localStorage.getItem('clockGoogleFont') || '';
-            const weight = localStorage.getItem('clockWeight') || '400';
-
-            document.getElementById('colorPicker').value = color;
-            document.getElementById('fontSize').value = parseInt(size);
-            document.getElementById('timezoneSelect').value = timezone;
-            document.getElementById('googleFont').value = googleFont;
-            document.getElementById('fontWeight').value = weight;
-
-            const preview = document.getElementById('fontPreview');
-            preview.style.color = color;
-            preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
-
-            document.getElementById('googleFont').dispatchEvent(new Event('input'));
-
-        });
-
-        document.getElementById('reset').addEventListener('click', () => {
-            if (confirm('Reset all settings to default?')) {
                 localStorage.removeItem('clockColor');
                 localStorage.removeItem('clockSize');
                 localStorage.removeItem('clockTimezone');
-                localStorage.removeItem('clockGoogleFont');
+                localStorage.removeItem('clockFont');
                 localStorage.removeItem('clockWeight');
+
+                localStorage.removeItem('dateColor');
+                localStorage.removeItem('dateSize');
+                localStorage.removeItem('dateWeight');
+                localStorage.removeItem('dateFont');
+                localStorage.removeItem('dateFormat');
+                localStorage.removeItem('dateTimezone');
+
 
                 channel.postMessage({
                     clockColor: 'black',
                     clockSize: '100px',
                     clockTimezone: 'local',
-                    clockGoogleFont: '',
+                    clockFont: '',
                     clockWeight: '400'
                 });
 
-                const preview = document.getElementById('fontPreview');
-                preview.style.color = 'black';
-                preview.style.fontFamily = 'sans-serif';
-                preview.style.fontWeight = '400';
-
-                // Also reset form fields
-                document.getElementById('colorPicker').value = '#000000';
-                document.getElementById('fontSize').value = 100;
-                document.getElementById('googleFont').value = '';
-                document.getElementById('fontWeight').value = '400';
+                document.getElementById('clockColorPicker').value = '#000000';
+                document.getElementById('clockFontSize').value = 100;
+                document.getElementById('clockGoogleFont').value = '';
+                document.getElementById('clockfontWeight').value = '400';
                 document.getElementById('timezoneSelect').value = 'local';
 
-                // Optionally trigger update
-                document.getElementById('googleFont').dispatchEvent(new Event('input'));
-            }
-        });
+                const preview = document.getElementById('clockFontPreview');
+                preview.style.color = 'black';
+                preview.style.fontFamily = 'sans-serif';
+                preview.style.clockfontWeight = '400';
 
-    </script>
+                broadcastDateSettings();
+
+                const datePreview = document.getElementById('dateFontPreview');
+
+                // Reset preview content
+                const today = new Date();
+                const format = 'MM/DD/YYYY';
+                const timezone = 'local';
+
+                document.getElementById('dateFormat').value = format; 
+                localStorage.setItem('dateFormat', format);
+                datePreview.textContent = formatDate(today, format, timezone);
+
+                // Reset style
+                datePreview.textContent = formatDate(today, format, timezone);
+                datePreview.style.fontFamily = 'sans-serif';
+                datePreview.style.fontWeight = '400';
+                datePreview.style.fontSize = '25px';
+                datePreview.style.color = 'black';
+                datePreview.style.backgroundColor = getBrightness('black') > 186 ? '#000000' : '#ffffff';
+
+                document.getElementById('dateColorPicker').value = '#000000';
+                document.getElementById('dateFontSize').value = 100;
+                document.getElementById('dateFontWeight').value = '400';
+                document.getElementById('dateGoogleFont').value = '';
+                document.getElementById('dateFormat').value = 'MM/DD/YYYY';
+                localStorage.setItem('dateFormat', 'MM/DD/YYYY');
+                document.getElementById('useClockStyleForDate').checked = true;
+                dateSettingsSection.style.display = 'none';
+
+                // Reset font link if needed
+                const oldLink = document.getElementById('dateFontPreviewLink');
+                if (oldLink) oldLink.remove();
+
+                syncDatePreviewToClock();
+                broadcastDateSettings();
+
+            });
+
+            // Events
+            window.addEventListener('DOMContentLoaded', () => {
+                const color = localStorage.getItem('clockColor') || '#000000';
+                const size = localStorage.getItem('clockSize') || '100px';
+                const timezone = 'local';
+                const clockGoogleFont = localStorage.getItem('clockFont') || '';
+                const weight = localStorage.getItem('clockWeight') || '400';
+
+                document.getElementById('clockColorPicker').value = color;
+                document.getElementById('clockFontSize').value = parseInt(size);
+                document.getElementById('timezoneSelect').value = timezone;
+                document.getElementById('clockGoogleFont').value = clockGoogleFont;
+                document.getElementById('clockfontWeight').value = weight;
+
+                const preview = document.getElementById('clockFontPreview');
+                preview.style.color = color;
+                preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+
+                updateClockFontPreview();
+
+                // 🆕 Sync date preview after clock settings have loaded
+                if (useClockStyleCheckbox.checked) {
+                    syncDatePreviewToClock();
+                } else {
+                    updateDateFontPreview();
+                }
+
+                broadcastDateSettings();
+            });
+
+
+
+            // Clock Listeners
+            document.getElementById('clockGoogleFont').addEventListener('input', () => {
+                updateClockFontPreview();
+                if (useClockStyleCheckbox.checked) syncDatePreviewToClock();
+            });
+
+            document.getElementById('clockfontWeight').addEventListener('change', () => {
+                updateClockFontPreview();
+                if (useClockStyleCheckbox.checked) syncDatePreviewToClock();
+            });
+
+            document.getElementById('clockColorPicker').addEventListener('input', () => {
+                const color = document.getElementById('clockColorPicker').value;
+                const preview = document.getElementById('clockFontPreview');
+                preview.style.color = color;
+                preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+
+                if (useClockStyleCheckbox.checked) syncDatePreviewToClock();
+            });
+
+
+            // Date Listeners
+            document.getElementById('dateGoogleFont').addEventListener('input', () => {
+                updateDateFontPreview();
+                broadcastDateSettings();
+            });
+            document.getElementById('dateFontWeight').addEventListener('change', () => {
+                updateDateFontPreview();
+                broadcastDateSettings();
+            });
+            document.getElementById('dateColorPicker').addEventListener('input', updateDateFontPreview);
+            useClockStyleCheckbox.addEventListener('change', () => {
+                const useClock = useClockStyleCheckbox.checked;
+                dateSettingsSection.style.display = useClock ? 'none' : 'block';
+
+                if (useClock) {
+                    syncDatePreviewToClock(); // 🆕 update the date preview to match clock
+                } else {
+                    updateDateFontPreview();  // update custom date preview
+                }
+
+                broadcastDateSettings();
+            });
+
+            document.querySelectorAll('#dateSettingsSection input, #dateSettingsSection select').forEach(el => {
+                el.addEventListener('change', broadcastDateSettings);
+            });
+
+            function syncDatePreviewToClock() {
+                const font = document.getElementById('clockGoogleFont').value.trim();
+                const weight = document.getElementById('clockfontWeight').value;
+                const color = document.getElementById('clockColorPicker').value;
+                const preview = document.getElementById('dateFontPreview');
+                const timezone = document.getElementById('timezoneSelect').value;
+                const format = document.getElementById('dateFormat').value;
+
+                localStorage.setItem('dateFont', font);
+                localStorage.setItem('dateWeight', weight);
+                localStorage.setItem('dateColor', color);
+                localStorage.setItem('dateTimezone', timezone);
+                localStorage.setItem('dateFormat', format);
+
+                preview.style.fontSize = '25px';
+
+                if (font) {
+                    const fontURL = font.replace(/ /g, '+');
+                    const old = document.getElementById('dateFontPreviewLink');
+                    if (old) old.remove();
+
+                    const link = document.createElement('link');
+                    link.id = 'dateFontPreviewLink';
+                    link.rel = 'stylesheet';
+                    link.href = `https://fonts.googleapis.com/css2?family=${fontURL}:wght@${weight}&display=swap`;
+                    document.head.appendChild(link);
+
+                    link.onload = () => {
+                        preview.style.fontFamily = `'${font}', sans-serif`;
+                        preview.style.fontWeight = weight;
+                        preview.style.color = color;
+                        preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+                        preview.textContent = formatDate(new Date(), format, timezone);
+                    };
+                } else {
+                    preview.style.fontFamily = 'sans-serif';
+                    preview.style.fontWeight = '400';
+                    preview.style.color = color;
+                    preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
+                    preview.textContent = formatDate(new Date(), format, timezone);
+                }
+            }
+
+
+            document.getElementById('dateFormat').addEventListener('change', () => {
+                if (useClockStyleCheckbox.checked) {
+                    syncDatePreviewToClock();
+                } else {
+                    updateDateFontPreview();
+                }
+                broadcastDateSettings();
+            });
+
+            document.getElementById('timezoneSelect').addEventListener('change', () => {
+                if (useClockStyleCheckbox.checked) {
+                    syncDatePreviewToClock();
+                } else {
+                    updateDateFontPreview();
+                }
+
+                broadcastDateSettings();
+            });
+
+            // Init
+            broadcastDateSettings();
+        </script>
+
 </body>
 
 </html>

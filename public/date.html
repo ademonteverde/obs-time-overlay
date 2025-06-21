@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OBS Date</title>
+    <style>
+        body {
+            background: transparent;
+            margin: 0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #date {
+            font-size: 40px;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="date">Loading...</div>
+
+    <script>
+        const dateElement = document.getElementById('date');
+        let timezone = 'local';
+
+        function applyDateSettings() {
+            const color = localStorage.getItem('dateColor') || 'black';
+            const size = localStorage.getItem('dateSize') || '40px';
+            const font = localStorage.getItem('dateFont') || '';
+            const weight = localStorage.getItem('dateWeight') || '400';
+            const format = localStorage.getItem('dateFormat') || 'MMMM D, YYYY';
+            timezone = localStorage.getItem('dateTimezone') || 'local';
+
+            dateElement.style.color = color;
+            dateElement.style.fontSize = size;
+            dateElement.style.fontWeight = weight;
+
+            if (font !== '') {
+                const fontNameForURL = font.replace(/ /g, '+');
+                const oldLink = document.getElementById('dynamicGoogleFont');
+                if (oldLink) oldLink.remove();
+
+                const link = document.createElement('link');
+                link.id = 'dynamicGoogleFont';
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}&display=swap`;
+                document.head.appendChild(link);
+
+                link.onload = () => {
+                    dateElement.style.fontFamily = `'${font}', sans-serif`;
+                    updateDate(format, timezone);;
+                };
+            } else {
+                dateElement.style.fontFamily = 'sans-serif';
+                updateDate(format, timezone);;
+            }
+        }
+
+        function formatDate(date, format, tz = 'local') {
+            function getPart(option, value) {
+                return new Intl.DateTimeFormat('en-US', { [option]: value, timeZone: tz === 'local' ? undefined : tz }).format(date);
+            }
+
+
+            const map = {
+                YYYY: date.toLocaleString('en-US', { year: 'numeric', timeZone: tz === 'local' ? undefined : tz }),
+                yyyy: date.toLocaleString('en-US', { year: 'numeric', timeZone: tz === 'local' ? undefined : tz }),
+                MM: getPart('month', '2-digit'),
+                DD: getPart('day', '2-digit'),
+                dd: getPart('day', '2-digit'),
+                D: getPart('day', 'numeric'),
+                d: getPart('day', 'numeric'),
+                MMM: getPart('month', 'short'),
+                MMMM: getPart('month', 'long'),
+                ddd: getPart('weekday', 'short'),
+                EEEE: getPart('weekday', 'long'),
+            };
+
+            return format.replace(/\b(?:YYYY|yyyy|MMMM|MMM|MM|DD|dd|D|d|ddd|EEEE)\b/g, match => map[match] || match);
+        }
+
+        function updateDate(format, tz) {
+            const now = new Date();
+            dateElement.textContent = formatDate(now, format, tz);
+        }
+
+
+        applyDateSettings();
+        setInterval(() => {
+            const format = localStorage.getItem('dateFormat') || 'MMMM D, YYYY';
+            updateDate(format, timezone);;
+        }, 60000);
+
+        const dateChannel = new BroadcastChannel('date-settings');
+        dateChannel.addEventListener('message', (event) => {
+            if (event.data.dateColor) localStorage.setItem('dateColor', event.data.dateColor);
+            if (event.data.dateSize) localStorage.setItem('dateSize', event.data.dateSize);
+            if (event.data.dateWeight) localStorage.setItem('dateWeight', event.data.dateWeight);
+            if (event.data.dateFormat) localStorage.setItem('dateFormat', event.data.dateFormat);
+            if (event.data.dateTimezone) localStorage.setItem('dateTimezone', event.data.dateTimezone);
+
+            // Handle font loading
+            const font = event.data.dateFont || event.data.clockFont;
+            if (font) {
+                localStorage.setItem('dateFont', font);
+
+                const fontNameForURL = font.replace(/ /g, '+');
+                const oldLink = document.getElementById('dynamicGoogleFont');
+                if (oldLink) oldLink.remove();
+
+                const link = document.createElement('link');
+                link.id = 'dynamicGoogleFont';
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${fontNameForURL}&display=swap`;
+                document.head.appendChild(link);
+
+                link.onload = () => {
+                    applyDateSettings(); // Only apply settings once the font is loaded
+                };
+            } else {
+                applyDateSettings(); // No custom font, apply immediately
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>
