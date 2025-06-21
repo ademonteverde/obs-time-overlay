@@ -32,7 +32,7 @@
             const color = localStorage.getItem('clockColor') || 'black';
             const size = localStorage.getItem('clockSize') || '100px';
             timezone = localStorage.getItem('clockTimezone') || 'local';
-            const googleFont = localStorage.getItem('clockGoogleFont') || '';
+            const googleFont = localStorage.getItem('clockFont') || '';
             const weight = localStorage.getItem('clockWeight') || '400';
 
             clock.style.color = color;
@@ -65,9 +65,14 @@
 
         function updateClock() {
             const now = new Date();
-            let displayTime = timezone === 'local'
-                ? now.toLocaleTimeString()
-                : now.toLocaleTimeString('en-US', { timeZone: timezone });
+            let displayTime = new Intl.DateTimeFormat('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZone: timezone === 'local' ? undefined : timezone
+            }).format(now);
+
 
             clock.textContent = displayTime;
         }
@@ -79,12 +84,7 @@
         // Update every second
         setInterval(updateClock, 1000);
 
-        // Listen for storage changes
-        window.addEventListener('storage', () => {
-            console.log('Storage event detected');
-            applySetting();
-            updateClock();
-        });
+
 
         // Listen for settings updates via BroadcastChannel
         const channel = new BroadcastChannel('clock-settings');
@@ -94,7 +94,7 @@
             localStorage.setItem('clockColor', event.data.clockColor);
             localStorage.setItem('clockSize', event.data.clockSize);
             localStorage.setItem('clockTimezone', event.data.clockTimezone);
-            localStorage.setItem('clockGoogleFont', event.data.clockGoogleFont);
+            localStorage.setItem('clockFont', event.data.clockFont);
             localStorage.setItem('clockWeight', event.data.clockWeight);
 
             applySetting();
