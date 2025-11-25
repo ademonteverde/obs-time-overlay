@@ -1,23 +1,30 @@
-# 🕒 OBS Clock & Date Dock – v1.0.0
+# 🕒 OBS Clock & Date Dock
+### Fully Customizable Clock + Date Overlays for OBS Studio
+
+![version](https://img.shields.io/badge/version-1.0.0-blue)
+![license](https://img.shields.io/badge/License-MIT-green.svg)
+![html](https://img.shields.io/badge/HTML-5-orange.svg)
+![obs](https://img.shields.io/badge/OBS-Compatible-302e31.svg)
+![made-by](https://img.shields.io/badge/Made%20by-Andre%20Carlo%20Demonteverde-9cf)
+
 A customizable clock and date overlay system for OBS Studio with a visual control dock.
 
-✅ Live-updating Clock and Date
-✅ Control font, size, color, weight, timezone, and format
-✅ Real-time settings sync between Dock and Displays
-✅ Google Fonts support with live previews
-✅ LocalStorage-based persistence
-✅ Easy OBS integration as a browser source
-✅ Clean, dark-themed UI inspired by OBS Yami Dock aesthetic
+✔ Live-updating clock and date  
+✔ Google Fonts support  
+✔ Real-time sync between dock + overlays  
+✔ LocalStorage persistence  
+✔ Clean, dark UI  
+✔ Easy to install and control  
 
 ---
 
 ## Files
 
-- `clock.html` – Clock overlay for OBS Studio
-
-- `date.html` – Date overlay for OBS Studio
-
-- `dock.html` – Settings dock to control both clock and date
+| File | Description |
+|------|-------------|
+| **clock.html** | Clock overlay for OBS |
+| **date.html**  | Date overlay for OBS |
+| **dock.html**  | Settings panel that controls both clock and date |
 
 ---
 
@@ -25,51 +32,46 @@ A customizable clock and date overlay system for OBS Studio with a visual contro
 
 ### 1. Setup
 
-1. Clone or download this repository to your computer.
-2. Open OBS Studio and create a new scene if needed.
-3. To add the Clock or Date Overlay to the scene:
-    - Add a new **Browser Source** to the scene.
-    - Tick the **Local file** checkbox.
-    - Set the **URL** to the `clock.html` or `date.html` file in the repository.
-    - Click **OK**.
-4. To add the Settings Dock to OBS Studio:
-    - Go to **Docks** → **Custom Browser Docks**.
-    - Set **Name** to: `OBS Clock Settings`.
-    - Set **URL** to:  
-      `http://absolute/` + the path to your `dock.html` file.  
-      Example:  
-      `http://absolute/C:/Users/dock.html`
-    - Click **Apply**.
+
+### 1️⃣ Add the Clock or Date Overlay  
+1. Open **OBS Studio**  
+2. Add **Browser Source** → *Local File*  
+3. Point it to `clock.html` or `date.html`  
+4. Set the size (e.g., **800 × 300**)  
+5. Done — overlay updates automatically
+
+---
+
+### 2️⃣ Add the Settings Dock  
+1. Go to **Docks → Custom Browser Docks**  
+2. Name: **OBS Clock Settings**  
+3. URL format (required by OBS): 
+    http://absolute/C:/path/to/dock.html
+4. Click **Apply**  
+5. The dock will appear and instantly control both overlays
 
 ---
 
 ## Features
 
 - ⏰ Clock customization
-
-    - Font family (Google Fonts supported)
-
-    - Font size and weight
-
-    - Text color
-
-    - Timezone selection
+    - 12-hour or 24-hour time  
+    - Show or hide seconds  
+    - Google Fonts support  
+    - Font size & weight  
+    - Text color  
+    - Timezone selection  
 
 - 📅 Date customization
-
-    - Multiple date formats (MM/DD/YYYY, dddd, MMMM D, YYYY, etc.)
-
-    - Optional custom font, color, size
-
-    - Toggle to match clock styling
+    - Multiple date formats  
+    - Optional custom font + size + color  
+    - Match clock styling toggle  
+    - Timezone-aware rendering  
 
 - 🧠 Live sync & persistence
-
-    - Instant updates via BroadcastChannel
-
-    - Settings saved using localStorage
-
-    - Reset button to restore defaults
+    - Instant updates via BroadcastChannel  
+    - Settings saved using localStorage  
+    - Reset button to restore defaults  
 
 ---
 
@@ -86,22 +88,17 @@ A customizable clock and date overlay system for OBS Studio with a visual contro
 
 ## Notes 
 
-- Tested with OBS 30+
-- **OBS Browser Source** sometimes blocks `file:///` — using `http://absolute/` works reliably
-- **BroadcastChannel** is used for fast settings sync 
-- Settings persist across sessions — reset button restores to:
-- Clock: black, sans-serif, 100px, normal
-- Date: black, sans-serif, 40px, `MMMM D, YYYY`, local timezone
+- Tested on **OBS 30+**  
+- If OBS blocks `file:///`, use `http://absolute/`  
+- Default reset values:  
+- **Clock:** black, sans-serif, 100px  
+- **Date:** black, sans-serif, 40px, `MMMM D, YYYY`
 
 ## Future Ideas
 
-- ✅ Option to display **Date** *(now live!)*
-- Option to display **Am/Pm**
-- Option to toggle **time format** (12h / 24h)
-- Option to toggle **seconds**
-- Option to **include date**
 - Custom **font upload**
 - Preset **style themes**
+- Toggle AM/PM label  
 - Sync between multiple clock overlays
 - Export/import config
 
@@ -109,5 +106,4 @@ A customizable clock and date overlay system for OBS Studio with a visual contro
 
 ## License
 MIT License
-
 Copyright (c) 2025 Andre Carlo Demonteverde

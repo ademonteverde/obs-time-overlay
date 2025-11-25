@@ -122,6 +122,18 @@
         <option value="Africa/Johannesburg">Africa/Johannesburg (South Africa)</option>
     </select>
 
+    <label>Hour Format:</label>
+    <select id="hourFormat">
+        <option value="12">12-hour (AM/PM)</option>
+        <option value="24">24-hour</option>
+    </select>
+
+    <label>Show Seconds:</label>
+    <select id="showSeconds">
+        <option value="yes">Show seconds</option>
+        <option value="no">Hide seconds</option>
+    </select>
+
     <label>Clock Font Color:</label>
     <input type="color" id="clockColorPicker" />
     <div style="font-size: 12px; color: grey;">
@@ -214,8 +226,8 @@
 
         <button id="save">Save</button>
         <div style="font-size: 12px; color: grey; margin-top: -10px;">
-    Remember to save before closing OBS so your settings are stored!
-</div>
+            Remember to save before closing OBS so your settings are stored!
+        </div>
 
 
         <script>
@@ -298,12 +310,35 @@
             function updateClockTimePreview() {
                 const preview = document.getElementById('clockFontPreview');
                 const timezone = document.getElementById('timezoneSelect')?.value || 'local';
+
+                const hourFormatSelect = document.getElementById('hourFormat');
+                const hourFormat =
+                    (hourFormatSelect && hourFormatSelect.value) ||
+                    localStorage.getItem('clockHourFormat') || '12';
+
+                const showSecondsSelect = document.getElementById('showSeconds');
+                const showSeconds =
+                    (showSecondsSelect && showSecondsSelect.value) ||
+                    localStorage.getItem('clockShowSeconds') ||
+                    'yes';
+
                 const date = new Date();
 
                 let timeString;
                 try {
-                    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-                    timeString = new Intl.DateTimeFormat('en-US', { ...options, timeZone: timezone === 'local' ? undefined : timezone }).format(date);
+                    const options = {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: hourFormat === '12'
+                    };
+                    if (showSeconds === 'yes') {
+                        options.second = '2-digit';
+                    }
+
+                    timeString = new Intl.DateTimeFormat('en-US', {
+                        ...options,
+                        timeZone: timezone === 'local' ? undefined : timezone
+                    }).format(date);
                 } catch (e) {
                     timeString = date.toLocaleTimeString();
                 }
@@ -326,7 +361,13 @@
                 const timezone = document.getElementById('timezoneSelect').value;
                 preview.textContent = formatDate(today, format, timezone);
 
-
+                const hourFormatSelect = document.getElementById('hourFormat');
+                if (hourFormatSelect) {
+                    hourFormatSelect.addEventListener('change', () => {
+                        localStorage.setItem('clockHourFormat', hourFormatSelect.value);
+                        updateClockTimePreview();
+                    });
+                }
 
                 preview.style.color = color;
 
@@ -406,6 +447,9 @@
                 const timezone = document.getElementById('timezoneSelect').value;
                 const clockGoogleFont = document.getElementById('clockGoogleFont').value.trim();
                 const weight = document.getElementById('clockfontWeight').value;
+                const hourFormat = document.getElementById('hourFormat').value;
+                const showSeconds = document.getElementById('showSeconds').value;
+
 
                 if (!clockGoogleFont) {
                     localStorage.setItem('clockColor', color);
@@ -413,13 +457,17 @@
                     localStorage.setItem('clockTimezone', timezone);
                     localStorage.setItem('clockFont', '');
                     localStorage.setItem('clockWeight', weight);
+                    localStorage.setItem('clockHourFormat', hourFormat);
+                    localStorage.setItem('clockShowSeconds', showSeconds);
 
                     channel.postMessage({
                         clockColor: color,
                         clockSize: size,
                         clockTimezone: timezone,
                         clockFont: '',
-                        clockWeight: weight
+                        clockWeight: weight,
+                        clockHourFormat: hourFormat,
+                        clockShowSeconds: showSeconds
                     });
 
                     broadcastDateSettings();
@@ -446,13 +494,18 @@
                     localStorage.setItem('clockTimezone', timezone);
                     localStorage.setItem('clockFont', clockGoogleFont);
                     localStorage.setItem('clockWeight', weight);
+                    localStorage.setItem('clockHourFormat', hourFormat);
+                    localStorage.setItem('clockShowSeconds', showSeconds);
+
 
                     channel.postMessage({
                         clockColor: color,
                         clockSize: size,
                         clockTimezone: timezone,
                         clockFont: clockGoogleFont,
-                        clockWeight: weight
+                        clockWeight: weight,
+                        clockHourFormat: hourFormat,
+                        clockShowSeconds: showSeconds
                     });
 
                     alert('Font applied successfully!');
@@ -477,6 +530,7 @@
                 localStorage.removeItem('clockTimezone');
                 localStorage.removeItem('clockFont');
                 localStorage.removeItem('clockWeight');
+                localStorage.removeItem('clockShowSeconds');
 
                 localStorage.removeItem('dateColor');
                 localStorage.removeItem('dateSize');
@@ -491,7 +545,9 @@
                     clockSize: '100px',
                     clockTimezone: 'local',
                     clockFont: '',
-                    clockWeight: '400'
+                    clockWeight: '400',
+                    clockHourFormat: '12',
+                    clockShowSeconds: 'yes'
                 });
 
                 document.getElementById('clockColorPicker').value = '#000000';
@@ -514,7 +570,7 @@
                 const format = 'MM/DD/YYYY';
                 const timezone = 'local';
 
-                document.getElementById('dateFormat').value = format; 
+                document.getElementById('dateFormat').value = format;
                 localStorage.setItem('dateFormat', format);
                 datePreview.textContent = formatDate(today, format, timezone);
 
@@ -558,7 +614,26 @@
                 document.getElementById('clockGoogleFont').value = clockGoogleFont;
                 document.getElementById('clockfontWeight').value = weight;
 
+                const savedHourFormat = localStorage.getItem('clockHourFormat') || '12';
+                const hourFormatSelect = document.getElementById('hourFormat');
+                if (hourFormatSelect) {
+                    hourFormatSelect.value = savedHourFormat;
+                }
+
+
                 const preview = document.getElementById('clockFontPreview');
+
+                const savedShowSeconds = localStorage.getItem('clockShowSeconds') || 'yes';
+                const showSecondsSelect = document.getElementById('showSeconds');
+                if (showSecondsSelect) {
+                    showSecondsSelect.value = savedShowSeconds;
+
+                    showSecondsSelect.addEventListener('change', () => {
+                        localStorage.setItem('clockShowSeconds', showSecondsSelect.value);
+                        updateClockTimePreview();
+                    });
+                }
+
                 preview.style.color = color;
                 preview.style.backgroundColor = getBrightness(color) > 186 ? '#000000' : '#ffffff';
 

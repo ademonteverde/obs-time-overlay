@@ -65,14 +65,21 @@
 
         function updateClock() {
             const now = new Date();
-            let displayTime = new Intl.DateTimeFormat('en-US', {
+            const hourFormat = localStorage.getItem('clockHourFormat') || '12';
+            const showSeconds = localStorage.getItem('clockShowSeconds') || 'yes';
+
+            let options = {
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit',
-                hour12: true,
+                hour12: hourFormat === '12',
                 timeZone: timezone === 'local' ? undefined : timezone
-            }).format(now);
+            };
+            
+            if (showSeconds === 'yes') {
+                options.second = '2-digit';
+            }
 
+            let displayTime = new Intl.DateTimeFormat('en-US', options).format(now);
 
             clock.textContent = displayTime;
         }
@@ -96,6 +103,12 @@
             localStorage.setItem('clockTimezone', event.data.clockTimezone);
             localStorage.setItem('clockFont', event.data.clockFont);
             localStorage.setItem('clockWeight', event.data.clockWeight);
+            if (event.data.clockHourFormat) {
+                localStorage.setItem('clockHourFormat', event.data.clockHourFormat);
+            }
+            if (event.data.clockShowSeconds) {
+                localStorage.setItem('clockShowSeconds', event.data.clockShowSeconds);
+            }
 
             applySetting();
             updateClock();
